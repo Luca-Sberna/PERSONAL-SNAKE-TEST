@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "react-bootstrap";
 
 const Snake = () => {
@@ -10,6 +10,13 @@ const Snake = () => {
   const [direction, setDirection] = useState("right");
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0); // Aggiungi stato per il punteggio
+  const snakeRef = useRef(null);
+  const [gameStarted, setGameStarted] = useState(false);
+
+  //Funzione per gestire il click sul pulsante "Inizia partita"
+  function handleStartClick() {
+    setGameStarted(true);
+  }
 
   //Funzione per controllare se la testa del serpente ha toccato il proprio corpo o i bordi del campo
   const checkCollision = useCallback(() => {
@@ -67,6 +74,12 @@ const Snake = () => {
     return () => clearInterval(interval);
   }, [snake, direction, checkCollision, moveSnake]);
 
+  //Effetto per gestire il focus del gioco , per non dover perforza far cliccare all'utente il div del gioco
+  //per ricevere i comandi di movimento
+  useEffect(() => {
+    if (snakeRef.current) snakeRef.current.focus();
+  }, []);
+
   //Funzione per gestire la pressione dei tasti per cambiare direzione
   function handleKeyDown(event) {
     switch (event.keyCode) {
@@ -97,36 +110,47 @@ const Snake = () => {
   }
 
   return (
-    <div className="Snake" tabIndex="0" onKeyDown={handleKeyDown}>
-      <div className="Score">Score: {score}</div>{" "}
-      {/* Visualizza il punteggio */}
-      {gameOver ? (
-        <>
-          <div className="GameOver">Game Over</div>
-          <Button onClick={handleRestart}>Restart</Button>{" "}
-          {/* Aggiungi pulsante per riavviare il gioco */}
-        </>
+    <>
+      {!gameStarted ? (
+        <Button onClick={handleStartClick}>Inizia partita</Button>
       ) : (
-        <div className="Board">
-          {Array.from({ length: 10 }).map((_, row) => (
-            <div key={row} className="Row">
-              {Array.from({ length: 10 }).map((_, col) => (
-                <div
-                  key={`${row}-${col}`}
-                  className={`Cell ${
-                    food[0] === row && food[1] === col ? "Food" : ""
-                  } ${
-                    snake.some((cell) => cell[0] === row && cell[1] === col)
-                      ? "Snake"
-                      : ""
-                  }`}
-                ></div>
+        <div
+          className="Snake"
+          tabIndex="0"
+          onKeyDown={handleKeyDown}
+          ref={snakeRef}
+        >
+          <div className="Score">Score: {score}</div>{" "}
+          {/* Visualizza il punteggio */}
+          {gameOver ? (
+            <>
+              <div className="GameOver">Game Over</div>
+              <Button onClick={handleRestart}>Restart</Button>{" "}
+              {/* Aggiungi pulsante per riavviare il gioco */}
+            </>
+          ) : (
+            <div className="Board">
+              {Array.from({ length: 10 }).map((_, row) => (
+                <div key={row} className="Row">
+                  {Array.from({ length: 10 }).map((_, col) => (
+                    <div
+                      key={`${row}-${col}`}
+                      className={`Cell ${
+                        food[0] === row && food[1] === col ? "Food" : ""
+                      } ${
+                        snake.some((cell) => cell[0] === row && cell[1] === col)
+                          ? "Snake"
+                          : ""
+                      }`}
+                    ></div>
+                  ))}
+                </div>
               ))}
             </div>
-          ))}
+          )}
         </div>
       )}
-    </div>
+    </>
   );
 };
 
