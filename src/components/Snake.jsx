@@ -132,6 +132,7 @@ const Snake = () => {
     setTime(0);
   }
 
+  //Effetto per salvare lo score a fine game
   useEffect(() => {
     if (gameOver) {
       saveScore();

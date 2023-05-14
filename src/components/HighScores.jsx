@@ -1,7 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const HighScores = () => {
-  const highScores = JSON.parse(localStorage.getItem("highScores")) || [];
+const HighScores = ({ updateHighScores }) => {
+  const [highScores, setHighScores] = useState(
+    JSON.parse(localStorage.getItem("highScores")) || [],
+  );
+
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      if (event.key === "highScores") {
+        const newHighScores = JSON.parse(event.newValue) || [];
+        setHighScores(newHighScores);
+        updateHighScores(newHighScores);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [updateHighScores]);
 
   return (
     <>
