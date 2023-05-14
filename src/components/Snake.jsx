@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "react-bootstrap";
+import HighScores from "./HighScores";
 
 const Snake = () => {
+  const [gameStarted, setGameStarted] = useState(false);
+  const [time, setTime] = useState(0);
   const [snake, setSnake] = useState([[0, 0]]);
   const [food, setFood] = useState([
     Math.floor(Math.random() * 10),
@@ -9,9 +12,8 @@ const Snake = () => {
   ]);
   const [direction, setDirection] = useState("right");
   const [gameOver, setGameOver] = useState(false);
-  const [score, setScore] = useState(0); // Aggiungi stato per il punteggio
+  const [score, setScore] = useState(0);
   const snakeRef = useRef(null);
-  const [gameStarted, setGameStarted] = useState(false);
 
   //Funzione per gestire il click sul pulsante "Inizia partita"
   function handleStartClick() {
@@ -62,23 +64,43 @@ const Snake = () => {
     setSnake(newSnake);
   }, [direction, food, score, snake]);
 
+  //Funzione per salvare il punteggio
+  const saveScore = useCallback(() => {
+    const highScores = JSON.parse(localStorage.getItem("highScores")) || [];
+    highScores.push({ score, time });
+    highScores.sort((a, b) => b.score - a.score);
+    localStorage.setItem("highScores", JSON.stringify(highScores.slice(0, 10)));
+  }, [score, time]);
+
   //Effetto per gestire il movimento del serpente
   useEffect(() => {
-    const interval = setInterval(() => {
-      moveSnake();
-      if (checkCollision()) {
-        setGameOver(true);
-        clearInterval(interval);
-      }
-    }, 500);
-    return () => clearInterval(interval);
-  }, [snake, direction, checkCollision, moveSnake]);
+    if (gameStarted && !gameOver) {
+      const interval = setInterval(() => {
+        moveSnake();
+        if (checkCollision()) {
+          setGameOver(true);
+          clearInterval(interval);
+        }
+      }, 500);
+      return () => clearInterval(interval);
+    }
+  }, [snake, direction, checkCollision, moveSnake, gameStarted, gameOver]);
 
   //Effetto per gestire il focus del gioco , per non dover perforza far cliccare all'utente il div del gioco
   //per ricevere i comandi di movimento
   useEffect(() => {
     if (snakeRef.current) snakeRef.current.focus();
   }, []);
+
+  //Effetto per gestire l'aggiornamento del tempo ogni secondo
+  useEffect(() => {
+    if (gameStarted && !gameOver) {
+      const interval = setInterval(() => {
+        setTime((time) => time + 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [gameStarted, gameOver]);
 
   //Funzione per gestire la pressione dei tasti per cambiare direzione
   function handleKeyDown(event) {
@@ -107,12 +129,22 @@ const Snake = () => {
     setDirection("right");
     setGameOver(false);
     setScore(0);
+    setTime(0);
   }
+
+  useEffect(() => {
+    if (gameOver) {
+      saveScore();
+    }
+  }, [gameOver, saveScore]);
 
   return (
     <>
       {!gameStarted ? (
-        <Button onClick={handleStartClick}>Inizia partita</Button>
+        <>
+          <Button onClick={handleStartClick}>Inizia partita</Button>
+          <HighScores />
+        </>
       ) : (
         <div
           className="Snake"
@@ -120,13 +152,15 @@ const Snake = () => {
           onKeyDown={handleKeyDown}
           ref={snakeRef}
         >
-          <div className="Score">Score: {score}</div>{" "}
-          {/* Visualizza il punteggio */}
+          {/* Visualizza il punteggio e il tempo */}
+          <div className="Score">
+            Score: {score} Time: {time}
+          </div>{" "}
+          {/* Aggiungi pulsante per riavviare il gioco */}
           {gameOver ? (
             <>
               <div className="GameOver">Game Over</div>
-              <Button onClick={handleRestart}>Restart</Button>{" "}
-              {/* Aggiungi pulsante per riavviare il gioco */}
+              <Button onClick={handleRestart}>Restart</Button> <HighScores />
             </>
           ) : (
             <div className="Board">
