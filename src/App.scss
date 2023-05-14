@@ -1,1 +1,27 @@
 @import "./customs/bootstrap";
+.Board {
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  height: 250px;
+  background-color: lightgray;
+}
+
+.Row {
+  display: flex;
+  flex-direction: row;
+}
+
+.Cell {
+  width: 25px;
+  height: 25px;
+  border: 1px solid black;
+}
+
+.Snake {
+  background-color: green;
+}
+
+.Food {
+  background-color: red;
+}

@@ -1,11 +1,11 @@
-import './App.scss';
 import { React } from 'react';
+import './App.scss';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Snake from './components/Snake';
 import NotFound from './components/NotFound';
 
 
-const App = () => {
+const App = () => (
 
   <BrowserRouter>
     <Routes>
@@ -14,6 +14,6 @@ const App = () => {
     </Routes>
   </BrowserRouter>
 
-}
+)
 
 export default App;
